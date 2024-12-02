@@ -34,19 +34,22 @@ namespace gEng
 		sf::Vector2f ray_origin;
 		sf::Vector2f ray_direction;
 		sf::Vector2f cp;
+		sf::Vector2f player_movement;
 
 		while (window->isOpen())
 		{
 
 			deltaTime = CurrentTime.restart().asSeconds();
 
-			eventsControl(deltaTime, player_move_dir);
-			player_move_dir.y += 200.0f * deltaTime;
+			eventsControl(deltaTime, player_movement);
+			player_movement.y += 50.0f;
 
 			camera.setCenter(player.getPosition().x + player.getSize().x / 2, player.getPosition().y + player.getSize().y / 2);
 			window->setView(camera);
 
-			checkPlayerCollision(objVector, player, ray_origin, ray_direction, cp, deltaTime);
+			std::cout << player_movement.x << '\t' << player_movement.y << std::endl;
+
+			checkPlayerCollision(objVector, player, player_movement, ray_origin, ray_direction, cp, deltaTime);
 
 			sf::Vertex line[] =
 			{
@@ -62,7 +65,7 @@ namespace gEng
 		}
 	}
 
-	void Engine::eventsControl(float deltaTime, sf::Vector2f& player_move_dir) {
+	void Engine::eventsControl(float deltaTime, sf::Vector2f& player_movement) {
 
 		sf::Event event;
 		while (window->pollEvent(event))
@@ -76,28 +79,33 @@ namespace gEng
 			}
 		}
 
-		float dtSpeed = player.getSpeed() * deltaTime;
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) 
+		{
+			player_movement.y -= 300.0f;
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) 
+		{
+			walk_dir = -1;
+		}
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-			player_move_dir.y -= 1900.0f * deltaTime;
+			walk_dir = 1;
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-			player_move_dir.x += -dtSpeed;
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-			player_move_dir.x += dtSpeed;
+		else {
+			walk_dir = 0;
 		}
 	}
 
-	void Engine::checkPlayerCollision(const std::vector<Object>& objVector, Player& player, sf::Vector2f& ray_origin, sf::Vector2f& ray_direction, sf::Vector2f& cp, float deltaTime)
+	void Engine::checkPlayerCollision(const std::vector<Object>& objVector, Player& player, sf::Vector2f& player_movement, sf::Vector2f& ray_origin, sf::Vector2f& ray_direction, sf::Vector2f& cp, float deltaTime)
 	{
 		std::vector<std::pair<int, float> > sortedObj;
 		sf::Vector2f contact_point, contact_normal;
 		float contact_time = 0;
-
+		player_movement = sf::Vector2f(player_movement.x + player.getSpeed() * walk_dir, player_movement.y);
+		std::cout << walk_dir << std::endl;
 		for (int i = 0; i < objVector.size(); i++)
 		{
-			if (DynamicRectVsRectCollision(player, objVector[i], player_move_dir, contact_point, contact_normal, contact_time, deltaTime))
+			if (DynamicRectVsRectCollision(player, objVector[i], player_movement, contact_point, contact_normal, contact_time, deltaTime))
 			{
 				sortedObj.push_back({ i, contact_time });
 			}
@@ -111,23 +119,18 @@ namespace gEng
 
 		for (int i = 0; i < sortedObj.size(); i++)
 		{
-			if (DynamicRectVsRectCollision(player, objVector[sortedObj[i].first], player_move_dir, contact_point, contact_normal, contact_time, deltaTime))
+			if (DynamicRectVsRectCollision(player, objVector[sortedObj[i].first], player_movement, contact_point, contact_normal, contact_time, deltaTime))
 			{
-				player_move_dir += sf::Vector2f(contact_normal.x * std::abs(player_move_dir.x) * (1 - contact_time), contact_normal.y * std::abs(player_move_dir.y) * (1 - contact_time));
+				player_movement += sf::Vector2f(contact_normal.x * std::abs(player_movement.x) * (1 - contact_time), contact_normal.y * std::abs(player_movement.y) * (1 - contact_time));
 			}
 		}
 
-
-		for (auto j : sortedObj) {
-			std::cout << j.first << '\t' << j.second << std::endl;
-		}
 		sortedObj.clear();
-		player.move(sf::Vector2f(player_move_dir.x, player_move_dir.y));
+		player.move(sf::Vector2f(player_movement.x * deltaTime, player_movement.y * deltaTime));
 		ray_origin = sf::Vector2f(player.getPosition().x + player.getSize().x / 2, player.getPosition().y + player.getSize().y / 2);
-		ray_direction = ray_origin + player_move_dir;
+		ray_direction = ray_origin + player_movement*deltaTime;
 		cp = contact_point;
-
-		player_move_dir = { 0, 0 };
+		player_movement.x -= player.getSpeed() * walk_dir;
 	}
 
 	bool Engine::RayVsRectCollision(sf::Vector2f ray_origin, sf::Vector2f ray_direction, sf::RectangleShape target, sf::Vector2f& contact_point, sf::Vector2f& contact_normal, float& t_hit_near)
@@ -188,7 +191,7 @@ namespace gEng
 		expanded_target.setPosition(sf::Vector2f(target.getPosition().x - in_rect.getSize().x / 2, target.getPosition().y - in_rect.getSize().y / 2));
 		expanded_target.setSize(target.getSize() + in_rect.getSize());
 
-		if (RayVsRectCollision(sf::Vector2f(in_rect.getPosition().x + in_rect.getSize().x / 2, in_rect.getPosition().y + in_rect.getSize().y / 2), in_rect_vel, expanded_target, contact_point, contact_normal, contact_time))
+		if (RayVsRectCollision(sf::Vector2f(in_rect.getPosition().x + in_rect.getSize().x / 2, in_rect.getPosition().y + in_rect.getSize().y / 2), in_rect_vel*deltaTime, expanded_target, contact_point, contact_normal, contact_time))
 		{
 			return (contact_time >= 0.0f && contact_time < 1.0f);
 		}
