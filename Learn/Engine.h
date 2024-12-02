@@ -6,7 +6,7 @@
 
 
 
-namespace gEng 
+namespace gEng
 {
 
 
@@ -14,13 +14,16 @@ namespace gEng
 	{
 	private:
 		sf::RenderWindow* window;
-		sf::View camera; 
+		sf::View camera;
 
 		std::vector<Object> objVector;
 		Player player;
+		sf::Vector2f player_move_dir;
 
 		sf::Vector2i terrainSize;
-		int tileSize=20;
+		int tileSize = 20;
+
+		sf::Texture grassBlockTex;
 
 
 	public:
@@ -29,7 +32,16 @@ namespace gEng
 
 		void startMainLoop();
 
-		void eventsControl(float deltaTime);
+		void eventsControl(float deltaTime, sf::Vector2f& player_move_dir);
+
+		void checkPlayerCollision(const std::vector<Object>& objVector, Player& player, sf::Vector2f& ray_origin, sf::Vector2f& ray_direction, sf::Vector2f& cp, float deltaTime);
+		bool RayVsRectCollision(sf::Vector2f ray_origin, sf::Vector2f ray_direction, sf::RectangleShape target, sf::Vector2f& contact_point, sf::Vector2f& contact_normal, float& t_hit_near);
+		bool DynamicRectVsRectCollision(Player& in_rect, Object target, sf::Vector2f in_rect_vel, sf::Vector2f& contact_point, sf::Vector2f& contact_normal, float& contact_time, float deltaTime);
+		sf::Vector2f normalize(sf::Vector2f vector);
+
+		void setGrassBlockTex(sf::Texture texture);
+
+		void createTerrain();
 
 		void drawTerrain();
 		void drawAll();
