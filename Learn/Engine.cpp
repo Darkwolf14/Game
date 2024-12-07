@@ -47,8 +47,6 @@ namespace gEng
 			camera.setCenter(player.getPosition().x + player.getSize().x / 2, player.getPosition().y + player.getSize().y / 2);
 			window->setView(camera);
 
-			std::cout << player_movement.x << '\t' << player_movement.y << std::endl;
-
 			checkPlayerCollision(objVector, player, player_movement, ray_origin, ray_direction, cp, deltaTime);
 
 			sf::Vertex line[] =
@@ -79,9 +77,9 @@ namespace gEng
 			}
 		}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) 
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && player.isOnFloor()) 
 		{
-			player_movement.y -= 300.0f;
+			player_movement.y -= 1000.0f;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) 
 		{
@@ -100,17 +98,26 @@ namespace gEng
 	{
 		std::vector<std::pair<int, float> > sortedObj;
 		sf::Vector2f contact_point, contact_normal;
+
+		bool is_up_contuct_normal = false;
 		float contact_time = 0;
+
 		player_movement = sf::Vector2f(player_movement.x + player.getSpeed() * walk_dir, player_movement.y);
-		std::cout << walk_dir << std::endl;
+		player_movement.y = std::min(player_movement.y, 1800.0f);
+
 		for (int i = 0; i < objVector.size(); i++)
 		{
 			if (DynamicRectVsRectCollision(player, objVector[i], player_movement, contact_point, contact_normal, contact_time, deltaTime))
 			{
 				sortedObj.push_back({ i, contact_time });
+				if (contact_normal == sf::Vector2f(0, -1)) {
+					is_up_contuct_normal = true;
+				}
 			}
 		}
 
+		player.isOnFloor(is_up_contuct_normal);
+		is_up_contuct_normal = false;
 
 		std::sort(sortedObj.begin(), sortedObj.end(), [](const std::pair<int, float>& a, const std::pair<int, float>& b)
 			{
@@ -130,7 +137,10 @@ namespace gEng
 		ray_origin = sf::Vector2f(player.getPosition().x + player.getSize().x / 2, player.getPosition().y + player.getSize().y / 2);
 		ray_direction = ray_origin + player_movement*deltaTime;
 		cp = contact_point;
-		player_movement.x -= player.getSpeed() * walk_dir;
+		if (player_movement.x != 0) {
+			player_movement.x -= player.getSpeed() * walk_dir;
+		}
+		
 	}
 
 	bool Engine::RayVsRectCollision(sf::Vector2f ray_origin, sf::Vector2f ray_direction, sf::RectangleShape target, sf::Vector2f& contact_point, sf::Vector2f& contact_normal, float& t_hit_near)
@@ -214,7 +224,7 @@ namespace gEng
 		{
 			for (int width = 0; width < terrainSize.x; width++)
 			{
-				objVector.push_back(Object(sf::Vector2f(width * tileSize + 0, height * tileSize), sf::Vector2f(tileSize, tileSize), sf::Color(128, 201, 0)));
+				objVector.push_back(Object(sf::Vector2f(width * tileSize, height * tileSize), sf::Vector2f(tileSize, tileSize), sf::Color(128, 201, 0)));
 			}
 		}
 	}

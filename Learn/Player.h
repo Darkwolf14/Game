@@ -9,12 +9,14 @@ namespace gEng {
 	{
 	private:
 		int speed=400;
+		bool is_on_floor;
 
 	public:
 		Player();
 		Player(sf::Vector2f position, sf::Vector2f size, sf::Color color);
 
-		
+		bool isOnFloor();
+		void isOnFloor(bool res);
 		int getSpeed();
 	};
 }

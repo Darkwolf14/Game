@@ -8,7 +8,7 @@ namespace gEng
 		shape.setSize(size);
 		shape.setPosition(position);
 		shape.setFillColor(color);
-		shape.setOutlineThickness(2);
+		shape.setOutlineThickness(1);
 		shape.setOutlineColor(sf::Color(255, 255, 255));
 	}
 
