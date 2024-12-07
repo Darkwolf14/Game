@@ -36,18 +36,12 @@ namespace gEng
 		sf::Vector2f cp;
 		sf::Vector2f player_movement;
 
-		sf::Vector2i mouseWindowPos;
-		sf::Vector2f mouseRealPos;
-
-		sf::RectangleShape block;
-		block.setSize(sf::Vector2f(10, 10));
-		
-
 		while (window->isOpen())
 		{
 
 			deltaTime = CurrentTime.restart().asSeconds();
 
+			countMouseGridPos();
 			eventsControl(deltaTime, player_movement);
 			player_movement.y += 50.0f;
 
@@ -62,15 +56,9 @@ namespace gEng
 				sf::Vertex(ray_direction)
 			};
 
-			mouseWindowPos = sf::Mouse::getPosition(*window);
-			mouseRealPos = window->mapPixelToCoords(mouseWindowPos);
-
-			block.setPosition(mouseRealPos);
-
 			window->clear();
 			drawAll();
 			window->draw(line, 2, sf::Lines);
-			window->draw(block);
 			window->display();
 
 		}
@@ -94,6 +82,7 @@ namespace gEng
 		{
 			player_movement.y -= 1000.0f;
 		}
+
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) 
 		{
 			walk_dir = -1;
@@ -105,6 +94,32 @@ namespace gEng
 		else {
 			walk_dir = 0;
 		}
+
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+			if (terrainSize.x * mouseGridPos.y + mouseGridPos.x <= terrainSize.x * terrainSize.y) {
+				objVector[terrainSize.x * mouseGridPos.y + mouseGridPos.x].setColor(sf::Color(0, 0, 0));
+			}
+		}
+	}
+
+	void Engine::getMouseViewPos() 
+	{
+		sf::Vector2i mouseWindowPos = sf::Mouse::getPosition(*window);
+		mouseViewPos = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
+	}
+
+	void Engine::countMouseGridPos() 
+	{
+		getMouseViewPos();
+		if (mouseViewPos.x >= 0.0f) 
+		{
+			mouseGridPos.x = static_cast<unsigned>(mouseViewPos.x / tileSize);
+		}
+		if (mouseViewPos.y >= 0.0f)
+		{
+			mouseGridPos.y = static_cast<unsigned>(mouseViewPos.y / tileSize);
+		}
+		std::cout << mouseGridPos.x << " " << mouseGridPos.y << "\t" << terrainSize.x << " " << terrainSize.y << std::endl;
 	}
 
 	void Engine::checkPlayerCollision(const std::vector<Object>& objVector, Player& player, sf::Vector2f& player_movement, sf::Vector2f& ray_origin, sf::Vector2f& ray_direction, sf::Vector2f& cp, float deltaTime)

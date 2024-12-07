@@ -15,6 +15,8 @@ namespace gEng
 	private:
 		sf::RenderWindow* window;
 		sf::View camera;
+		sf::Vector2f mouseViewPos;
+		sf::Vector2i mouseGridPos;
 
 		std::vector<Object> objVector;
 		Player player;
@@ -33,6 +35,8 @@ namespace gEng
 		void startMainLoop();
 
 		void eventsControl(float deltaTime, sf::Vector2f& player_move_dir);
+		void getMouseViewPos();
+		void countMouseGridPos();
 
 		void checkPlayerCollision(const std::vector<Object>& objVector, Player& player, sf::Vector2f& player_movement, sf::Vector2f& ray_origin, sf::Vector2f& ray_direction, sf::Vector2f& cp, float deltaTime);
 		bool RayVsRectCollision(sf::Vector2f ray_origin, sf::Vector2f ray_direction, sf::RectangleShape target, sf::Vector2f& contact_point, sf::Vector2f& contact_normal, float& t_hit_near);

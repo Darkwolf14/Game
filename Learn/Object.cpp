@@ -12,17 +12,25 @@ namespace gEng
 		shape.setOutlineColor(sf::Color(255, 255, 255));
 	}
 
-	void Object::setPosition(sf::Vector2f position) {
+	void Object::setPosition(sf::Vector2f position) 
+	{
 		shape.setPosition(position);
 	}
 
-	sf::Vector2f Object::getPosition() {
+	void Object::setColor(sf::Color color) {
+		shape.setFillColor(color);
+	}
+
+	sf::Vector2f Object::getPosition() 
+	{
 		return shape.getPosition();
 	}
 
-	sf::Vector2f Object::getSize() {
+	sf::Vector2f Object::getSize() 
+	{
 		return shape.getSize();
 	}
+
 
 	void Object::move(sf::Vector2f pos) 
 	{
