@@ -36,6 +36,13 @@ namespace gEng
 		sf::Vector2f cp;
 		sf::Vector2f player_movement;
 
+		sf::Vector2i mouseWindowPos;
+		sf::Vector2f mouseRealPos;
+
+		sf::RectangleShape block;
+		block.setSize(sf::Vector2f(10, 10));
+		
+
 		while (window->isOpen())
 		{
 
@@ -55,9 +62,15 @@ namespace gEng
 				sf::Vertex(ray_direction)
 			};
 
+			mouseWindowPos = sf::Mouse::getPosition(*window);
+			mouseRealPos = window->mapPixelToCoords(mouseWindowPos);
+
+			block.setPosition(mouseRealPos);
+
 			window->clear();
 			drawAll();
 			window->draw(line, 2, sf::Lines);
+			window->draw(block);
 			window->display();
 
 		}
@@ -110,33 +123,34 @@ namespace gEng
 			if (DynamicRectVsRectCollision(player, objVector[i], player_movement, contact_point, contact_normal, contact_time, deltaTime))
 			{
 				sortedObj.push_back({ i, contact_time });
-				if (contact_normal == sf::Vector2f(0, -1)) {
-					is_up_contuct_normal = true;
-				}
+				
 			}
 		}
-
-		player.isOnFloor(is_up_contuct_normal);
-		is_up_contuct_normal = false;
 
 		std::sort(sortedObj.begin(), sortedObj.end(), [](const std::pair<int, float>& a, const std::pair<int, float>& b)
 			{
 				return a.second < b.second;
 			});
-
 		for (int i = 0; i < sortedObj.size(); i++)
 		{
 			if (DynamicRectVsRectCollision(player, objVector[sortedObj[i].first], player_movement, contact_point, contact_normal, contact_time, deltaTime))
 			{
+				if (contact_normal == sf::Vector2f(0, -1)) {
+					is_up_contuct_normal = true;
+				}
 				player_movement += sf::Vector2f(contact_normal.x * std::abs(player_movement.x) * (1 - contact_time), contact_normal.y * std::abs(player_movement.y) * (1 - contact_time));
 			}
 		}
-
 		sortedObj.clear();
+
+		player.isOnFloor(is_up_contuct_normal);
+		is_up_contuct_normal = false;
+
 		player.move(sf::Vector2f(player_movement.x * deltaTime, player_movement.y * deltaTime));
 		ray_origin = sf::Vector2f(player.getPosition().x + player.getSize().x / 2, player.getPosition().y + player.getSize().y / 2);
 		ray_direction = ray_origin + player_movement*deltaTime;
 		cp = contact_point;
+
 		if (player_movement.x != 0) {
 			player_movement.x -= player.getSpeed() * walk_dir;
 		}
