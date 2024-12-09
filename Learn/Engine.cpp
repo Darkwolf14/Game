@@ -80,7 +80,7 @@ namespace gEng
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && player.isOnFloor()) 
 		{
-			player_movement.y -= 1000.0f;
+			player_movement.y = -1000.0f;
 		}
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) 
@@ -96,8 +96,15 @@ namespace gEng
 		}
 
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
-			if (terrainSize.x * mouseGridPos.y + mouseGridPos.x <= terrainSize.x * terrainSize.y) {
+			if (terrainSize.x * mouseGridPos.y + mouseGridPos.x < terrainSize.x * terrainSize.y) {
 				objVector[terrainSize.x * mouseGridPos.y + mouseGridPos.x].setColor(sf::Color(0, 0, 0));
+				objVector[terrainSize.x * mouseGridPos.y + mouseGridPos.x].setColiding(false);
+			}
+		}
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+			if (terrainSize.x * mouseGridPos.y + mouseGridPos.x < terrainSize.x * terrainSize.y) {
+				objVector[terrainSize.x * mouseGridPos.y + mouseGridPos.x].setColor(sf::Color(128, 201, 0));
+				objVector[terrainSize.x * mouseGridPos.y + mouseGridPos.x].setColiding(true);
 			}
 		}
 	}
@@ -135,7 +142,7 @@ namespace gEng
 
 		for (int i = 0; i < objVector.size(); i++)
 		{
-			if (DynamicRectVsRectCollision(player, objVector[i], player_movement, contact_point, contact_normal, contact_time, deltaTime))
+			if (objVector[i].isColiding() && DynamicRectVsRectCollision(player, objVector[i], player_movement, contact_point, contact_normal, contact_time, deltaTime))
 			{
 				sortedObj.push_back({ i, contact_time });
 				
