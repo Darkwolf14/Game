@@ -5,7 +5,8 @@
 
 int main() 
 {
-	gEng::Engine engine(sf::Vector2i(800, 600), sf::Vector2i(100, 10));
+	//Create the engine
+	gEng::Engine engine(sf::Vector2i(800, 600), sf::Vector2i(20, 100));
 	
 	engine.startMainLoop();
 
